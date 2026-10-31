@@ -42,4 +42,4 @@ async function cacarLicencasPorCNPJ(cnpj) {
   };
 }
 
-module.exports = { cacarLicencasPorCNPJ };
+module.exports = { cacarLicencasPorCNPJ }; 
