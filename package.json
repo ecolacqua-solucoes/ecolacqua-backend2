@@ -1,10 +1,10 @@
 {
   "name": "ecolacqua-backend",
   "version": "1.0.0",
-  "description": "Backend de automação e consulta real de licenças ambientais para Ecolacqua",
-  "main": "servidor.js",
+  "description": "Backend do sistema Ecolacqua SaaS",
+  "main": "server.js",
   "scripts": {
-    "start": "node servidor.js"
+    "start": "node server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
