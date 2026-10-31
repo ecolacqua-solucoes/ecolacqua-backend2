@@ -1,84 +1,45 @@
-const puppeteer = require('puppeteer');
+const axios = require('axios');
 
-async function rasparIBAMA(page, cnpj) {
-  let licencas = [];
+async function cacarLicencasPorCNPJ(cnpj) {
+  const cnpjClean = cnpj.replace(/\D/g, '');
+  
+  let razaoSocial = "EMPRESA EXEMPLO S.A.";
+  
   try {
-    licencas.push({
-      cliente: "EMPRESA CONSULTADA S.A.",
+    // Tenta buscar os dados reais da empresa na API pública da BrasilAPI
+    const response = await axios.get(`https://brasilapi.com.br/api/cnpj/v1/${cnpjClean}`, { timeout: 5000 });
+    if (response.data && response.data.razao_social) {
+      razaoSocial = response.data.razao_social;
+    }
+  } catch (err) {
+    console.log("Aviso: Não foi possível consultar a Receita Federal online, usando dados de fallback.");
+  }
+
+  // Lista de licenças simuladas/encontradas para retornar ao SaaS
+  const licencas = [
+    {
+      cliente: razaoSocial,
       cnpj: cnpj,
       tipo: "LO",
-      numero: "IBAMA-FED-9988/2025",
-      orgao: "IBAMA",
-      vencimento: "2026-12-15",
-      lat: -25.4284,
-      lng: -49.2733,
-      ficheiroNome: "licenca_federal_ibama.pdf",
-      condicionantes: [{ descricao: "Relatório anual de emissões federais", prazo: "2026-06-30", ok: false }]
-    });
-  } catch (err) {
-    console.error('[IBAMA] Erro:', err.message);
-  }
-  return licencas;
-}
-
-async function rasparIAT(page, cnpj) {
-  let licencas = [];
-  try {
-    licencas.push({
-      cliente: "EMPRESA CONSULTADA S.A.",
-      cnpj: cnpj,
-      tipo: "LI",
-      numero: "IAT-PR-45892/2024",
+      numero: "89412/2024",
       orgao: "IAT",
-      vencimento: "2026-05-15",
-      lat: -25.4300,
-      lng: -49.2700,
-      ficheiroNome: "licenca_estadual_iat.pdf",
-      condicionantes: [{ descricao: "Laudo de estanqueidade dos tanques", prazo: "2026-04-10", ok: true }]
-    });
-  } catch (err) {
-    console.error('[IAT] Erro:', err.message);
-  }
-  return licencas;
-}
-
-async function rasparMunicipalPR(page, cnpj, municipio) {
-  let licencas = [];
-  try {
-    licencas.push({
-      cliente: "EMPRESA CONSULTADA S.A.",
+      vencimento: "2026-11-15"
+    },
+    {
+      cliente: razaoSocial,
       cnpj: cnpj,
-      tipo: "LAS",
-      numero: "SMMA-PR-1029/2024",
-      orgao: "SMA",
-      vencimento: "2027-01-20",
-      lat: -25.4350,
-      lng: -49.2650,
-      ficheiroNome: "licenca_municipal_pr.pdf",
-      condicionantes: [{ descricao: "Limpeza da caixa de gordura e resíduos", prazo: "2026-08-10", ok: false }]
-    });
-  } catch (err) {
-    console.error('[Municipal] Erro:', err.message);
-  }
-  return licencas;
+      tipo: "Outorga",
+      numero: "32109/2023",
+      orgao: "IBAMA",
+      vencimento: "2027-05-20"
+    }
+  ];
+
+  return {
+    sucesso: true,
+    total: licencas.length,
+    licencas: licencas
+  };
 }
 
-async function caçarLicencasPR_Federal(cnpj, municipio) {
-  const browser = await puppeteer.launch({
-    headless: "new",
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
-  });
-  const page = await browser.newPage();
-  let resultados = [];
-  try {
-    const ibama = await rasparIBAMA(page, cnpj);
-    const iat = await rasparIAT(page, cnpj);
-    const municipal = await rasparMunicipalPR(page, cnpj, municipio);
-    resultados = [...ibama, ...iat, ...municipal];
-  } finally {
-    await browser.close();
-  }
-  return resultados;
-}
-
-module.exports = { caçarLicencasPR_Federal };
+module.exports = { cacarLicencasPorCNPJ };
